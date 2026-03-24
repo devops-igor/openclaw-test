@@ -473,6 +473,14 @@ func (b *Bot) handleURL(u *tgbotapi.Update) {
 
 	// Clean URL: remove tracking parameters (e.g., ?si=...) that can confuse yt-dlp
 	cleanURL := cleanYouTubeURL(rawURL)
+
+	// Reject URLs starting with "--" to prevent yt-dlp option injection
+	if strings.HasPrefix(cleanURL, "--") {
+		b.log.Warn("Rejected URL with -- prefix (possible option injection)", "user_id", userID, "url", cleanURL)
+		_ = b.SendMessage(chatID, "❌ Invalid URL format.")
+		return
+	}
+
 	b.log.Info("Cleaned URL for yt-dlp", "original", rawURL, "cleaned", cleanURL)
 
 	// List formats
@@ -709,7 +717,9 @@ func (b *Bot) downloadAndSend(chatID, userID int64, url, formatID string, status
 		b.log.Error("Failed to open downloaded file", "error", err, "path", result.FilePath)
 		edit := tgbotapi.NewEditMessageText(chatID, statusMsgID, "❌ Failed to send file. Please try again.")
 		_, _ = b.api.Send(edit)
-		os.Remove(result.FilePath)
+		if err := os.Remove(result.FilePath); err != nil {
+			b.log.Warn("Failed to remove temp file after open error", "path", result.FilePath, "error", err)
+		}
 		return
 	}
 
@@ -719,13 +729,17 @@ func (b *Bot) downloadAndSend(chatID, userID int64, url, formatID string, status
 		Reader: file,
 	})
 	_, err = b.api.Send(doc)
-	file.Close() // Close immediately after send
+	if cerr := file.Close(); cerr != nil {
+		b.log.Warn("Failed to close file handle", "path", result.FilePath, "error", cerr)
+	}
 
 	if err != nil {
 		b.log.Error("Failed to send document", "error", err, "file", result.Filename)
 		edit := tgbotapi.NewEditMessageText(chatID, statusMsgID, "❌ Failed to send file. It may be too large for Telegram.")
 		_, _ = b.api.Send(edit)
-		os.Remove(result.FilePath)
+		if err := os.Remove(result.FilePath); err != nil {
+			b.log.Warn("Failed to remove temp file after send error", "path", result.FilePath, "error", err)
+		}
 		return
 	}
 

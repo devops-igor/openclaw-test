@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -54,6 +55,12 @@ func Load() (*Config, error) {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		configPath = "./configs/default.yaml"
+	}
+
+	// Sanitize path to prevent directory traversal
+	configPath = filepath.Clean(configPath)
+	if strings.Contains(configPath, "..") {
+		return nil, fmt.Errorf("CONFIG_PATH contains invalid path components")
 	}
 
 	// Load YAML file if it exists

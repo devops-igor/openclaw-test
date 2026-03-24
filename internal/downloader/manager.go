@@ -78,7 +78,7 @@ func (m *Manager) Download(ctx context.Context, url string, formatID string) (*t
 	m.log.Info("starting download", "url", url, "formatID", formatID)
 
 	// Ensure download directory exists
-	if err := os.MkdirAll(m.downloadDir, 0755); err != nil {
+	if err := os.MkdirAll(m.downloadDir, 0700); err != nil {
 		return nil, fmt.Errorf("failed to create download directory: %w", err)
 	}
 

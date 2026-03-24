@@ -79,7 +79,9 @@ func (s *Server) Serve(ctx context.Context) (string, error) {
 			return
 		}
 		s.logger.Info("serving file download", "filename", safeName, "remote", r.RemoteAddr)
-		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, safeName))
+		// Escape quotes in filename to prevent header injection
+		escapedName := strings.ReplaceAll(safeName, `"`, `\"`)
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, escapedName))
 		http.ServeFile(w, r, s.file)
 		// Signal download complete
 		s.mu.Lock()
@@ -109,7 +111,10 @@ func (s *Server) Serve(ctx context.Context) (string, error) {
 	s.Port = actualPort
 	publicURL := s.BuildURL(actualPort, encodedName)
 
-	srv := &http.Server{Handler: mux}
+	srv := &http.Server{
+		Handler:           mux,
+		ReadHeaderTimeout: 30 * time.Second,
+	}
 
 	// Start serving in background
 	errCh := make(chan error, 1)
