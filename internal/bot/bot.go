@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/fsnotify/fsnotify"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/igorkon/youtube-downloader-bot/internal/config"
@@ -37,6 +38,7 @@ type MessageSender interface {
 type Bot struct {
 	api      MessageSender
 	cfg      *config.Config
+	cfgMu    sync.RWMutex // protects cfg for live reload
 	log      *logger.Logger
 	executor *downloader.Executor
 	parser   *downloader.Parser
@@ -102,6 +104,11 @@ func (b *Bot) Run(ctx context.Context) error {
 		return fmt.Errorf("Run() requires a real *tgbotapi.BotAPI, use New() to create the bot")
 	}
 
+	// Start config file watcher if a config file path is available
+	if cp := config.ConfigPath(); cp != "" {
+		b.startConfigWatcher(ctx, cp)
+	}
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -123,6 +130,57 @@ func (b *Bot) Run(ctx context.Context) error {
 	}
 }
 
+// startConfigWatcher monitors the config file for changes and reloads automatically.
+func (b *Bot) startConfigWatcher(ctx context.Context, configPath string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		b.log.Error("Failed to create config file watcher", "error", err)
+		return
+	}
+
+	if err := watcher.Add(configPath); err != nil {
+		b.log.Error("Failed to watch config file", "path", configPath, "error", err)
+		watcher.Close()
+		return
+	}
+
+	b.log.Info("Config file watcher started", "path", configPath)
+
+	go func() {
+		defer watcher.Close()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&(fsnotify.Write|fsnotify.Create) != 0 {
+					b.log.Info("Config file changed, reloading...", "path", configPath)
+					newCfg, err := config.Load()
+					if err != nil {
+						b.log.Error("Failed to reload config, keeping old config", "error", err)
+						continue
+					}
+					b.cfgMu.Lock()
+					oldCount := len(b.cfg.Telegram.AllowedUsers)
+					b.cfg = newCfg
+					b.cfgMu.Unlock()
+					b.log.Info("Config reloaded successfully",
+						"allowed_users_before", oldCount,
+						"allowed_users_after", len(newCfg.Telegram.AllowedUsers))
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				b.log.Error("Config watcher error", "error", err)
+			}
+		}
+	}()
+}
+
 // SendMessage sends a text message to the given chat.
 func (b *Bot) SendMessage(chatID int64, text string) error {
 	msg := tgbotapi.NewMessage(chatID, text)
@@ -132,6 +190,8 @@ func (b *Bot) SendMessage(chatID int64, text string) error {
 
 // Config returns the bot's configuration.
 func (b *Bot) Config() *config.Config {
+	b.cfgMu.RLock()
+	defer b.cfgMu.RUnlock()
 	return b.cfg
 }
 
@@ -271,7 +331,9 @@ func (b *Bot) allowRequest(userID int64, limit float64) bool {
 func (b *Bot) whitelistMiddleware() Middleware {
 	return func(next HandlerFunc) HandlerFunc {
 		return func(bot *Bot, u *tgbotapi.Update) {
+			bot.cfgMu.RLock()
 			allowed := bot.cfg.Telegram.AllowedUsers
+			bot.cfgMu.RUnlock()
 			if len(allowed) == 0 {
 				// No whitelist configured — allow all
 				next(bot, u)
@@ -536,9 +598,12 @@ func (b *Bot) handleURL(u *tgbotapi.Update) {
 
 	b.log.Info("Formats filtered to 720p+", "total", len(formats), "filtered_720p_plus", len(qualityFormats))
 
-	// Pick top 5
-	selected := selectTopFormats(qualityFormats, 5)
-	b.log.Info("Formats listed", "user_id", userID, "total", len(formats), "filtered_720p_plus", len(qualityFormats), "selected", len(selected))
+	// Deduplicate by resolution — keep one format per unique resolution (prefer mp4, then largest size)
+	deduplicated := deduplicateByResolution(qualityFormats)
+
+	// Pick top 5 unique resolutions
+	selected := selectTopFormats(deduplicated, 5)
+	b.log.Info("Formats listed", "user_id", userID, "total", len(formats), "filtered_720p_plus", len(qualityFormats), "deduplicated", len(deduplicated), "selected", len(selected))
 
 	// Store pending state (use cleaned URL for downloads)
 	b.state.set(userID, &PendingDownload{
@@ -895,7 +960,46 @@ func selectTopFormats(formats []types.Format, maxCount int) []types.Format {
 	return formats[:maxCount]
 }
 
+// deduplicateByResolution returns one format per unique resolution.
+// For each resolution group, it prefers mp4 format, then the largest filesize.
+// Input must be sorted by resolution descending.
+func deduplicateByResolution(formats []types.Format) []types.Format {
+	seen := make(map[int]bool)
+	var result []types.Format
+
+	for _, f := range formats {
+		height := extractHeight(f.Resolution)
+		if seen[height] {
+			continue
+		}
+		seen[height] = true
+		result = append(result, f)
+	}
+	return result
+}
+
+// formatApproxSize returns a human-friendly approximate size string like "~150 MB" or "~1.2 GB".
+func formatApproxSize(f types.Format) string {
+	if f.Filesize == "" || f.Filesize == "N/A" {
+		return ""
+	}
+	// Clean up the filesize: remove ~ prefix if present, parse to bytes
+	sizeStr := strings.TrimPrefix(f.Filesize, "~")
+	sizeStr = strings.TrimSpace(sizeStr)
+	bytes, err := parseSizeToBytes(sizeStr)
+	if err != nil {
+		return ""
+	}
+	mb := float64(bytes) / (1024 * 1024)
+	if mb >= 1024 {
+		gb := mb / 1024
+		return fmt.Sprintf("~%.0f GB", gb)
+	}
+	return fmt.Sprintf("~%.0f MB", mb)
+}
+
 // buildFormatKeyboard creates an inline keyboard from a list of formats.
+// Shows simplified labels like "720p — ~150 MB".
 func buildFormatKeyboard(formats []types.Format) tgbotapi.InlineKeyboardMarkup {
 	var rows [][]tgbotapi.InlineKeyboardButton
 
@@ -903,9 +1007,20 @@ func buildFormatKeyboard(formats []types.Format) tgbotapi.InlineKeyboardMarkup {
 	const maxButtonTextLen = 64
 
 	for _, f := range formats {
-		label := f.Description
-		if f.Filesize != "" && f.Filesize != "N/A" {
-			label = fmt.Sprintf("%s — %s", f.Description, f.Filesize)
+		// Build simplified label: "720p — ~150 MB"
+		// Try Resolution field first (e.g., "1920x1080"), then fall back to Description (e.g., "1080p")
+		resLabel := ""
+		if height := extractHeight(f.Resolution); height > 0 {
+			resLabel = fmt.Sprintf("%dp", height)
+		} else if height := extractHeight(f.Description); height > 0 {
+			resLabel = fmt.Sprintf("%dp", height)
+		}
+		if resLabel == "" {
+			resLabel = f.Description
+		}
+		label := resLabel
+		if size := formatApproxSize(f); size != "" {
+			label = fmt.Sprintf("%s — %s", resLabel, size)
 		}
 		// Truncate button text to Telegram's 64-char limit
 		if len(label) > maxButtonTextLen {

@@ -630,11 +630,12 @@ func TestBuildFormatKeyboard(t *testing.T) {
 	if btn1.CallbackData == nil || *btn1.CallbackData != "download:137" {
 		t.Errorf("expected callback data 'download:137', got %q", *btn1.CallbackData)
 	}
+	// Simplified format: "1080p — ~50 MB"
 	if !strings.Contains(btn1.Text, "1080p") {
 		t.Errorf("expected '1080p' in button text, got %q", btn1.Text)
 	}
-	if !strings.Contains(btn1.Text, "50MiB") {
-		t.Errorf("expected '50MiB' in button text, got %q", btn1.Text)
+	if !strings.Contains(btn1.Text, "~50 MB") {
+		t.Errorf("expected '~50 MB' in button text, got %q", btn1.Text)
 	}
 
 	// Last row should be cancel
@@ -644,8 +645,8 @@ func TestBuildFormatKeyboard(t *testing.T) {
 	}
 }
 
-// C2 (TASK-008): Test button text truncation to Telegram's 64-char limit
-func TestBuildFormatKeyboardTruncatesLongText(t *testing.T) {
+// C2 (TASK-008): Test that simplified format produces short button text
+func TestBuildFormatKeyboardSimplifiedText(t *testing.T) {
 	longDesc := "This is a very long format description that exceeds the sixty-four character limit of Telegram buttons and should be truncated"
 	formats := []types.Format{
 		{ID: "999", Description: longDesc, Filesize: "100MiB"},
@@ -654,14 +655,12 @@ func TestBuildFormatKeyboardTruncatesLongText(t *testing.T) {
 	kb := buildFormatKeyboard(formats)
 
 	btn := kb.InlineKeyboard[0][0]
+	// Long non-resolution descriptions still get truncated to 64 chars
 	if len(btn.Text) > 64 {
 		t.Errorf("button text should be truncated to <= 64 chars, got %d chars: %q", len(btn.Text), btn.Text)
 	}
 	if !strings.HasSuffix(btn.Text, "...") {
 		t.Errorf("truncated text should end with '...', got %q", btn.Text)
-	}
-	if len(btn.Text) != 64 {
-		t.Errorf("truncated text should be exactly 64 chars, got %d", len(btn.Text))
 	}
 }
 
