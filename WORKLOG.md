@@ -450,3 +450,35 @@ Verification:
 [2026-03-24 21:37] | dev_bot | BUGFIX | youtube-downloader-bot/TASK-24
 Details: Fixed "downloaded videos have no audio" bug. Root cause: YouTube serves video and audio as separate streams at 720p+. The bot was passing a single video-only format ID (e.g. 137) to yt-dlp, resulting in video-only output. Fix: in manager.Download(), append "+bestaudio" to numeric format IDs so yt-dlp merges video+audio. Added isNumericFormatID() helper. All checks pass: go fmt ? go vet ? go build ? go test ?
 
+
+---
+
+[2026-03-24 22:49] | dev_bot | TASK_STARTED | youtube-downloader-bot/TASK-26
+Details: Fixing 7 security and quality issues from qa_bot full review (FULL_REVIEW.md). 4 MUST FIX + 3 SHOULD FIX issues.
+
+---
+
+[2026-03-24 22:49] | dev_bot | CODE_CHANGED | youtube-downloader-bot/TASK-26
+Details: Files changed:
+- internal/serve/server.go — Added ReadHeaderTimeout (Slowloris fix), escaped quotes in Content-Disposition filename (header injection fix)
+- internal/bot/bot.go — Added -- prefix URL rejection (yt-dlp option injection fix), logged file.Close() and os.Remove() errors (unhandled error fix)
+- internal/bot/bot_test.go — Changed t.Error to t.Fatal in nil check (SA5011 fix)
+- internal/downloader/manager.go — Changed MkdirAll permissions from 0755 to 0700 (over-permissive directory fix)
+- internal/config/config.go — Added filepath.Clean and .. component check for CONFIG_PATH (directory traversal fix)
+
+---
+
+[2026-03-24 22:49] | dev_bot | TESTS_COMPLETED | youtube-downloader-bot/TASK-26
+Details: All checks pass:
+- go fmt ./... ✅
+- go vet ./... ✅
+- go build ./cmd/... ✅
+- go test ./... ✅ (all tests pass)
+- golangci-lint run ./... ✅ (no issues)
+- gosec ./... ✅ (only 3 pre-existing false positives remain: G204/G102/G103)
+
+---
+
+[2026-03-24 22:49] | dev_bot | TASK_COMPLETED | youtube-downloader-bot/TASK-26
+Details: All 7 security/quality issues from qa_bot review fixed and verified. 4 medium-priority (Slowloris, yt-dlp injection, header injection, directory perms) + 3 low-priority (unhandled errors, CONFIG_PATH traversal, nil pointer warning). Ready for QA review.
+
