@@ -47,6 +47,14 @@ type Config struct {
 	Share      ShareConfig      `yaml:"share"`
 }
 
+// cfgPath tracks the resolved config file path for live-reload watching.
+var cfgPath string
+
+// ConfigPath returns the resolved config file path, or empty if none was loaded.
+func ConfigPath() string {
+	return cfgPath
+}
+
 // Load loads configuration from environment variables and optionally from a YAML file.
 // The YAML file path defaults to "./configs/default.yaml" but can be overridden via CONFIG_PATH env var.
 // Environment variables take precedence over YAML values.
@@ -62,6 +70,9 @@ func Load() (*Config, error) {
 	if strings.Contains(configPath, "..") {
 		return nil, fmt.Errorf("CONFIG_PATH contains invalid path components")
 	}
+
+	// Store resolved path for live-reload watching
+	cfgPath = configPath
 
 	// Load YAML file if it exists
 	cfg := &Config{}
