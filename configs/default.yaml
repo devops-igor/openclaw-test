@@ -1,0 +1,11 @@
+telegram:
+  allowed_users: []
+
+downloader:
+  yt_dlp_path: "yt-dlp"
+  download_dir: "./downloads"
+  max_file_size_mb: 50
+  rate_limit_per_user: 10
+
+storage:
+  file_retention_minutes: 60

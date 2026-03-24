@@ -1,0 +1,39 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+[youtube] dQw4w9WgXcQ: Downloading webpage
+[youtube] dQw4w9WgXcQ: Downloading ios player API JSON
+[youtube] dQw4w9WgXcQ: Downloading m3u8 information
+[info] Available formats for dQw4w9WgXcQ:
+ID  EXT   RESOLUTION FPS CH │   FILESIZE   TBR PROTO  VCODEC        VBR ACODEC      ABR ASR  MORE INFO
+─── ──── ─────────── ─── ── │ ────────── ───── ───── ─────────── ───── ────────── ──── ─── ─────────────
+sb2 mhtml 48x27        0    │                  mhtml  images                                  storyboard
+sb1 mhtml 80x45        0    │                  mhtml  images                                  storyboard
+sb0 mhtml 160x90       0    │                  mhtml  images                                  storyboard
+599 m4a   audio only      2 │    3.45MiB   97k https  audio only        mp4a.40.5   97k 22k ultralow, DASH audio
+600 webm  audio only      2 │    4.55MiB  131k https  audio only        opus       131k 48k ultralow, DASH audio
+139 m4a   audio only      2 │    5.12MiB  146k https  audio only        mp4a.40.5  146k 22k low, DASH audio
+249 webm  audio only      2 │    5.51MiB  157k https  audio only        opus       157k 48k low, DASH audio
+250 webm  audio only      2 │    7.28MiB  207k https  audio only        opus       207k 48k low, DASH audio
+140 m4a   audio only      2 │   13.57MiB  385k https  audio only        mp4a.40.2  385k 44k medium, DASH audio
+251 webm  audio only      2 │   14.43MiB  410k https  audio only        opus       410k 48k medium, DASH audio
+17  3gp   176x144      12   │    2.96MiB   84k https  mp4v.20.3    84k samr       12k 8k
+160 mp4   256x144      15   │    3.03MiB   86k https  avc1.4d400c  86k video only          144p, DASH video
+278 webm  256x144      15   │    3.83MiB  109k https  vp09.00.11.08 109k video only        144p, DASH video
+133 mp4   426x240      30   │    7.11MiB  202k https  avc1.4d4015 202k video only          240p, DASH video
+242 webm  426x240      30   │    7.55MiB  214k https  vp09.00.20.08 214k video only        240p, DASH video
+134 mp4   640x360      30   │   15.44MiB  439k https  avc1.4d401e 439k video only          360p, DASH video
+18  mp4   640x360      30   │   24.95MiB  709k https  avc1.42001E 709k mp4a.40.2  96k 44k 360p
+243 webm  640x360      30   │   13.06MiB  371k https  vp09.00.21.08 371k video only        360p, DASH video
+135 mp4   854x480      30   │   26.19MiB  744k https  avc1.4d401f 744k video only          480p, DASH video
+244 webm  854x480      30   │   22.65MiB  644k https  vp09.00.30.08 644k video only        480p, DASH video
+136 mp4   1280x720     30   │   50.23MiB 1427k https  avc1.64001f 1427k video only         720p, DASH video
+247 webm  1280x720     30   │   45.67MiB 1297k https  vp09.00.31.08 1297k video only       720p, DASH video
+22  mp4   1280x720     30   │ ~ 65.43MiB 1860k https  avc1.64001F 1860k mp4a.40.2 192k 44k 720p
+137 mp4   1920x1080    30   │  101.55MiB 2885k https  avc1.640028 2885k video only         1080p, DASH video
+248 webm  1920x1080    30   │   80.12MiB 2276k https  vp09.00.40.08 2276k video only       1080p, DASH video
+311 webm  1920x1080    60   │  153.77MiB 4370k https  vp09.00.41.08 4370k video only       1080p60, DASH video
+299 mp4   1920x1080    60   │  171.39MiB 4871k https  avc1.64002a 4871k video only         1080p60, DASH video
+271 webm  2560x1440    30   │  328.45MiB 9334k https  vp09.00.50.08 9334k video only      1440p, DASH video
+264 mp4   2560x1440    30   │  374.26MiB 10636k https avc1.640033 10636k video only        1440p, DASH video
+272 webm  3840x2160    60   │  826.63MiB 23490k https vp09.00.51.08 23490k video only     2160p60, DASH video
+313 webm  3840x2160    30   │  568.41MiB 16153k https vp09.00.50.08 16153k video only     2160p, DASH video
+401 mp4   3840x2160    60   │  686.17MiB 19501k https avc1.640034 19501k video only       2160p60, DASH video

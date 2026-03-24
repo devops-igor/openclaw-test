@@ -1,0 +1,5 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=short
+[info] Available formats for short:
+ID  EXT   RESOLUTION FPS CH │   FILESIZE   TBR PROTO  VCODEC        VBR ACODEC      ABR ASR  MORE INFO
+─── ──── ─────────── ─── ── │ ────────── ───── ───── ─────────── ───── ────────── ──── ─── ─────────────
+18  mp4   640x360      30   │    5.12MiB  146k https  avc1.42001E 146k mp4a.40.2  96k 44k 360p

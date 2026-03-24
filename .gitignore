@@ -1,0 +1,25 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/test
+*.test
+*.out
+go.work
+go.work.sum
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Build
+/bot
+/bot-linux-amd64
+downloads/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,18 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=XBXKL8bbC4g
+[youtube] XBXKL8bbC4g: Downloading webpage
+[youtube] XBXKL8bbC4g: Downloading ios player API JSON
+[youtube] XBXKL8bbC4g: Downloading m3u8 information
+[info] Available formats for XBXKL8bbC4g:
+ID EXT RESOLUTION FPS CH | FILESIZE TBR PROTO | VCODEC VBR ACODEC ABR ASR MORE INFO
+---------------------------------------------------------------------------------------------------------------------
+sb3 mhtml 48x27 0 | mhtml | images storyboard
+sb2 mhtml 80x45 0 | mhtml | images storyboard
+sb1 mhtml 160x90 0 | mhtml | images storyboard
+sb0 mhtml 320x180 0 | mhtml | images storyboard
+139 m4a audio only 2 | 5.95MiB 49k https | audio only mp4a.40.5 49k 22k [en] low, m4a_dash
+249 webm audio only 2 | 6.04MiB 49k https | audio only opus 49k 48k [en] low, webm_dash
+140 m4a audio only 2 | 15.80MiB 129k https | audio only mp4a.40.2 129k 44k [en] medium, m4a_dash
+251 webm audio only 2 | 15.91MiB 130k https | audio only opus 130k 48k [en] medium, webm_dash
+91 mp4 256x144 30 | ~ 20.70MiB 170k m3u8 | avc1.4D400C mp4a.40.5 [en] Untested
+160 mp4 256x144 30 | 10.34MiB 85k https | avc1.4d400c 85k video only 144p, mp4_dash
+18 mp4 640x360 30 2 | 85.24MiB 699k https | avc1.42001E mp4a.40.2 44k [en] 360p

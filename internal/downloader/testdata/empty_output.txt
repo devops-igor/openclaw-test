@@ -1,0 +1,2 @@
+[youtube] Extracting URL: https://www.youtube.com/watch?v=invalid
+ERROR: [youtube] invalid: Video unavailable
