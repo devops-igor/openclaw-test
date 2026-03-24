@@ -536,7 +536,7 @@ func TestStateSetAndGet(t *testing.T) {
 	s.set(100, pd)
 	got = s.get(100)
 	if got == nil {
-		t.Error("expected non-nil after set")
+		t.Fatal("expected non-nil after set")
 	}
 	if got.URL != pd.URL {
 		t.Errorf("expected URL %q, got %q", pd.URL, got.URL)
