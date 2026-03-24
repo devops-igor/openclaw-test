@@ -502,3 +502,26 @@ Details: All 7 security/quality issues from qa_bot review fixed and verified. 4 
 
 [2026-03-24 22:55] | qa_bot | QA_VERIFIED | youtube-downloader-bot/TASK-26
 
+---
+
+## 2026-03-24 — dev_bot
+
+### TASK-27: Simplify format listing response ✅
+- Added `deduplicateByResolution()` to keep one format per resolution
+- Added `formatApproxSize()` for human-friendly size display (~150 MB / ~1.2 GB)
+- Updated `buildFormatKeyboard()` to show simplified labels: `720p — ~150 MB`
+- Updated `handleURL()` to deduplicate before showing format selection
+- Updated tests to match new format
+- All verification checks passed (`go fmt`, `go vet`, `go build`, `go test`)
+
+### TASK-28: Config file live reload ✅
+- Added `fsnotify` dependency for file system watching
+- Exported `ConfigPath()` from config package
+- Added `startConfigWatcher()` to bot — watches config file in background goroutine
+- Added `cfgMu sync.RWMutex` for thread-safe config access during reload
+- On config change: reloads config, swaps in place, logs change
+- On failure: keeps old config, logs error
+- All verification checks passed (`go fmt`, `go vet`, `go build`, `go test`)
+
+---
+
